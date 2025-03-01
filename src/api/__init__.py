@@ -1,10 +1,15 @@
-import fastapi
+from fastapi import FastAPI
 from ..main import router
 from fastapi.middleware.cors import CORSMiddleware
 
-def create_app():
+def create_app() -> FastAPI:
+    """
+    Creates and configures an instance of the FastAPI application.
 
-    app = fastapi.FastAPI (docs_url="/docs")
+    Returns:
+        FastAPI: An instance of the FastAPI application with CORS middleware and routes included.
+    """
+    app = FastAPI (docs_url="/docs")
     origins = ["http://localhost:8000"]
     app.add_middleware(
         CORSMiddleware,
