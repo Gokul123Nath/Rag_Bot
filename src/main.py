@@ -5,7 +5,7 @@ from .retrieve import search_chunks
 from .chunk_store import store_text_in_db, split_text
 from .llm_generation import generate_text, generate_text_replacement
 from typing import Dict
-from logger import get_logger
+from .logger import get_logger
 
 logger = get_logger("RAG Bot")
 

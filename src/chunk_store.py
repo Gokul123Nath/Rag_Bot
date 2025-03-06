@@ -1,7 +1,7 @@
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import os
 from typing import List, Tuple
-from logger import get_logger
+from .logger import get_logger
 
 logger = get_logger("RAG Bot")
 

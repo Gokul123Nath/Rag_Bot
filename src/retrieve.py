@@ -3,7 +3,7 @@ from whoosh.fields import Schema, TEXT
 from whoosh.qparser import QueryParser
 import os
 from typing import List
-from logger import get_logger
+from .logger import get_logger
 
 logger = get_logger("RAG Bot")
 
