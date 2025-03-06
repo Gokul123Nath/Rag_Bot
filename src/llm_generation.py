@@ -1,6 +1,9 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import requests, os
 from dotenv import load_dotenv
+from logger import get_logger
+
+logger = get_logger("RAG Bot")
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
@@ -15,7 +18,10 @@ model_name = "bigscience/bloom-1b7" # Other open sourced like EleutherAI/gpt-j-6
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
 
-def generate_text_replacement(prompt, max_length=1000):
+def generate_text_replacement(prompt, max_length=1000): 
+    '''
+    Dummy function to use transformer since the transformer using hugging face API key stays always busy.
+    '''
     inputs = tokenizer(prompt, return_tensors="pt")
     output = model.generate(**inputs, max_length=max_length)
     return tokenizer.decode(output[0], skip_special_tokens=True)
@@ -32,20 +38,25 @@ def generate_text(data : str, max_length : int = 1000) -> str:
         str: The generated text if the request is successful.
              An error message if the request fails or the response can't be parsed as JSON.
     """
-    payload = {
-        "inputs": f"""
-        Task:
-        Using the context provided, generate a detailed and coherent response that addresses the following data:
-        {data}
+    try :
+        payload = {
+            "inputs": f"""
+            Task:
+            Using the context provided, generate a detailed and coherent response that addresses the following data:
+            {data}
 
-        Guidelines:
-        - Ensure the response is well-structured and logically organized.
-        - Use appropriate language and tone based on the context.
-        - Include relevant examples or details from the provided context to support the response.
-        - Maintain clarity and conciseness in the explanation.""",
-        "parameters": {"max_length": max_length, "temperature": 0.7},
-    }
-    response = requests.post(API_URL, headers=headers, json=payload)
+            Guidelines:
+            - Ensure the response is well-structured and logically organized.
+            - Use appropriate language and tone based on the context.
+            - Include relevant examples or details from the provided context to support the response.
+            - Maintain clarity and conciseness in the explanation.""",
+            "parameters": {"max_length": max_length, "temperature": 0.7},
+        }
+        response = requests.post(API_URL, headers=headers, json=payload)
+        logger.info ("Succcessfully retrieved the response from teh API")
+
+    except Exception as e:
+        logger.error("Error in generating response : {e}")
     
     try:
         response_json = response.json()
@@ -54,6 +65,7 @@ def generate_text(data : str, max_length : int = 1000) -> str:
         else:
             return f"Error: {response_json}"
     except ValueError: 
+        logger.error("Unable to parse the response")
         return f"Error: Unable to parse JSON. Raw response content: {response.text}"
     
 

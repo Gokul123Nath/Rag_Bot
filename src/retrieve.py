@@ -3,6 +3,9 @@ from whoosh.fields import Schema, TEXT
 from whoosh.qparser import QueryParser
 import os
 from typing import List
+from logger import get_logger
+
+logger = get_logger("RAG Bot")
 
 # Define schema
 schema = Schema(content=TEXT(stored=True))
@@ -15,10 +18,15 @@ def create_index() -> 'index.Index':
     Returns:
         index.Index: An instance of the created index.
     """
-    if not os.path.exists("indexdir"):
-        os.mkdir("indexdir")
-    ix = index.create_in("indexdir", schema)
-    return ix
+    try :
+        if not os.path.exists("indexdir"):
+            os.mkdir("indexdir")
+        ix = index.create_in("indexdir", schema)
+        logger.info("Successfully created index")
+        return ix
+    
+    except Exception as e:
+        logger.error("Error in creating index {e}")
 
 # Adding documents to index
 def indexing_doc() -> 'index.Index':
@@ -28,14 +36,19 @@ def indexing_doc() -> 'index.Index':
     Returns:
         index.Index: An instance of the updated index.
     """
-    ix = create_index()
-    writer = ix.writer()
-    for chunk_file in os.listdir('files'):
-        with open(f'files/{chunk_file}', 'r') as f:
-            content = f.read()
-            writer.add_document(content=content)
-    writer.commit()
-    return ix
+    try:
+        ix = create_index()
+        writer = ix.writer()
+        for chunk_file in os.listdir('files'):
+            with open(f'files/{chunk_file}', 'r') as f:
+                content = f.read()
+                writer.add_document(content=content)
+        writer.commit()
+        logger.info("Successfully written the indexed chunks")
+        return ix
+    
+    except Exception as e:
+        logger.error("Error in writing Indexing document {e}")
 
 def search_chunks(query_str) -> List[str]:
     """
@@ -47,10 +60,15 @@ def search_chunks(query_str) -> List[str]:
     Returns:
         List[str]: A list of relevant document chunk contents.
     """
-    ix = indexing_doc()
-    with ix.searcher() as searcher:
-        query = QueryParser("content", ix.schema).parse(query_str)
-        results = searcher.search(query)
-        data = [result["content"] for result in results]
-        return data
+    try:
+        ix = indexing_doc()
+        with ix.searcher() as searcher:
+            query = QueryParser("content", ix.schema).parse(query_str)
+            results = searcher.search(query)
+            data = [result["content"] for result in results]
+            logger.info("Successfully retrieved relevant doc using search")
+            return data
+        
+    except Exception as e:
+        logger.error("Error in searching chunked texts {e}")
     
